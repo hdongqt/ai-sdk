@@ -31,14 +31,12 @@ const WeatherCard = ({ data }: { data: any }) => {
           <span className="text-2xl font-medium">°C</span>
         </div>
       </div>
-      {/* Subtle background decoration */}
       <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
     </div>
   );
 };
 
 const GoldPriceTable = ({ data }: { data: any }) => {
-  // Handle both direct data and nested { status, data } structure
   const list = data?.data || data;
   const isError = data?.status === 'error' || !Array.isArray(list);
 
@@ -175,9 +173,8 @@ export default function Chat() {
                   }`}
                 >
                   <div className="text-sm leading-relaxed">
-                    {message?.parts?.length > 0 && message.parts.map((part, i) => {
-                      console.log(part);
-                      if (part.type === 'text') {
+                    {message?.parts?.length > 0 && message.parts.map((part: any, i) => {
+                      if (part.type === 'text' && message.parts.findIndex((p: any) => p.type.startsWith('tool')) === -1) {
                         return (
                           <div key={`${message.id}-${i}`} className="whitespace-pre-wrap relative inline">
                             {part.text}
@@ -187,7 +184,6 @@ export default function Chat() {
                           </div>
                         );
                       }
-
                       if (part.type.startsWith('tool')) {
                          if (part.type === 'tool-weather') {
                             return <WeatherCard key={`${message.id}-${i}`} data={(part.output as any)?.data} />;
