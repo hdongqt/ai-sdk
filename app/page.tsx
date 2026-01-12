@@ -3,6 +3,90 @@
 import { useChat } from '@ai-sdk/react';
 import { useState, useEffect, useRef } from 'react';
 
+
+const WeatherCard = ({ data }: { data: any }) => {
+  const weatherInfo = data?.data || data;
+  const isError = data?.status === 'error' || !weatherInfo;
+
+  if (isError) {
+    return (
+        <p className="text-sm font-medium">{data?.message || 'Không thể lấy thông tin thời tiết.'}</p>
+    );
+  }
+
+  const { name, temp, description } = weatherInfo;
+
+  return (
+    <div className="bg-linear-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-5 my-3 shadow-lg shadow-blue-500/20 relative overflow-hidden">
+      <div className="relative z-10">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-bold opacity-90">{name || 'Vị trí không xác định'}</h3>
+            <p className="text-sm opacity-80 capitalize">{description || 'Bầu trời quang đãng'}</p>
+          </div>
+          <span className="text-4xl">🌤️</span>
+        </div>
+        <div className="mt-4 flex items-baseline gap-1">
+          <span className="text-5xl font-bold tracking-tighter">{Math.round(temp) || 0}</span>
+          <span className="text-2xl font-medium">°C</span>
+        </div>
+      </div>
+      {/* Subtle background decoration */}
+      <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+    </div>
+  );
+};
+
+const GoldPriceTable = ({ data }: { data: any }) => {
+  // Handle both direct data and nested { status, data } structure
+  const list = data?.data || data;
+  const isError = data?.status === 'error' || !Array.isArray(list);
+
+  if (isError) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-4 my-2 flex items-center gap-3 text-red-700">
+        <span className="text-2xl">⚠️</span>
+        <p className="text-sm font-medium">{data?.message || 'Không thể lấy thông tin giá vàng.'}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden my-3 shadow-sm">
+      <div className="bg-amber-500/10 px-4 py-2 border-b border-border flex items-center gap-2">
+        <span className="text-amber-600">💰</span>
+        <h3 className="text-sm font-bold text-amber-800">Bảng Giá Vàng Bảo Tín Minh Châu</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead className="text-xs text-muted-foreground uppercase bg-muted/50">
+            <tr>
+              <th className="px-4 py-2 font-medium">Loại vàng</th>
+              <th className="px-4 py-2 font-medium text-right">Mua vào</th>
+              <th className="px-4 py-2 font-medium text-right">Bán ra</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {list.map((item: any, idx: number) => (
+              <tr key={idx} className="hover:bg-muted/30 transition-colors">
+                <td className="px-4 py-3 font-medium text-xs max-w-[150px] truncate">{item.name}</td>
+                <td className="px-4 py-3 text-right text-green-600 font-semibold">{item.buy}</td>
+                <td className="px-4 py-3 text-right text-red-600 font-semibold">{item.sell}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="px-4 py-2 bg-muted/20 border-t border-border">
+        <p className="text-[10px] text-muted-foreground italic text-center">
+          * Giá vàng biến động liên tục, chỉ mang tính chất tham khảo.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+
 export default function Chat() {
   const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState('');
@@ -14,7 +98,6 @@ export default function Chat() {
     setMounted(true);
   }, []);
 
-  // Throttled scroll to bottom to avoid loops and jitter
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -45,18 +128,17 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border px-4 py-4">
+    <div className="flex flex-col min-h-screen bg-background" >
+      <header className="sticky top-0 z-10 border-b border-border px-4 py-4 bg-background/80 backdrop-blur-md">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg shadow-primary/20">
             AI
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight">Gemini Assistant</h1>
+            <h1 className="font-bold text-lg leading-tight">AI vip pro</h1>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
-              {isLoading ? 'AI vip pro đang suy nghĩ...' : 'Online & Ready'}
+              <span className={'w-2 h-2 rounded-full bg-green-500'}></span>
+              Đang sẵn sàng hỗ trợ Boss
             </p>
           </div>
         </div>
@@ -86,45 +168,35 @@ export default function Chat() {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
+                  className={`max-w-[90%] rounded-2xl px-4 py-3 shadow-sm ${
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-tr-none'
                       : 'bg-card border border-border rounded-tl-none'
                   }`}
                 >
                   <div className="text-sm leading-relaxed">
-                    {message.parts.map((part, i) => {
-                      console.log(part)
-                      switch (part.type) {
-                        case 'text':
-                          return (
-                            <div key={`${message.id}-${i}`} className="whitespace-pre-wrap relative inline">
-                              {part.text}
-                              {isLastMessage && isAI && isLoading && (
-                                <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />
-                              )}
-                            </div>
-                          );    
-                         case 'tool-weather': 
-                         return (
-                         <div key={`${message.id}-${i}`} className="whitespace-pre-wrap relative inline">
-                          {(part as any).output}
-                            </div>
+                    {message?.parts?.length > 0 && message.parts.map((part, i) => {
+                      console.log(part);
+                      if (part.type === 'text') {
+                        return (
+                          <div key={`${message.id}-${i}`} className="whitespace-pre-wrap relative inline">
+                            {part.text}
+                            {isLastMessage && isAI && isLoading && (
+                              <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />
+                            )}
+                          </div>
                         );
-                        case 'tool-invocation':
-                          const isCalling = (part as any).state === 'call' || (part as any).toolInvocation?.state === 'call';
-                          if (isCalling) {
-                            return (
-                              <div key={`${message.id}-${i}`} className="flex items-center gap-2 py-2 text-muted-foreground italic">
-                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                                <span>Đang lấy thông tin...</span>
-                              </div>
-                            );
-                          }
-                          return null;
-                        default:
-                          return null;
                       }
+
+                      if (part.type.startsWith('tool')) {
+                         if (part.type === 'tool-weather') {
+                            return <WeatherCard key={`${message.id}-${i}`} data={(part.output as any)?.data} />;
+                         }
+                         if (part.type === 'tool-goldPrice') {
+                            return <GoldPriceTable key={`${message.id}-${i}`} data={(part.output as any)?.data} />;
+                         }
+                      }
+
                     })}
                   </div>
                 </div>
