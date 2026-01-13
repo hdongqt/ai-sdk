@@ -89,12 +89,33 @@ export default function Chat() {
   const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage, setMessages } = useChat({
+    id: 'chat-v6',
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('chat-v6');
+    if (savedMessages) {
+      try {
+        setMessages(JSON.parse(savedMessages));
+      } catch (e) {
+        console.error('Failed to load chat history:', e);
+      }
+    }
+  }, [setMessages]);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('chat-v6', JSON.stringify(messages));
+    }
+  }, [messages]);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -126,17 +147,17 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background" >
-      <header className="sticky top-0 z-10 border-b border-border px-4 py-4 bg-background/80 backdrop-blur-md">
+    <div className="flex flex-col min-h-screen bg-slate-50" >
+      <header className="sticky top-0 z-10 border-b border-indigo-100 px-4 py-4 bg-background/80 backdrop-blur-md">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg shadow-primary/20">
-            AI
+          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
+            EB
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight">AI vip pro</h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <h1 className="font-bold text-lg leading-tight text-indigo-900">English Buddy</h1>
+            <p className="text-xs text-indigo-600/70 flex items-center gap-1">
               <span className={'w-2 h-2 rounded-full bg-green-500'}></span>
-              Đang sẵn sàng hỗ trợ Boss
+              Your English Tutor is ready!
             </p>
           </div>
         </div>
@@ -146,12 +167,12 @@ export default function Chat() {
         <div className="max-w-2xl mx-auto space-y-6">
           {messages.length === 0 && (
             <div className="text-center py-20 space-y-4">
-              <div className="w-16 h-16 bg-muted rounded-2xl mx-auto flex items-center justify-center text-3xl">
-                👋
+              <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-3xl">
+                📚
               </div>
-              <h2 className="text-2xl font-bold tracking-tight">Xin chào Boss!</h2>
-              <p className="text-muted-foreground max-w-sm mx-auto">
-                Em là AI vip pro. Boss muốn em hỗ trợ gì hôm nay không ạ? 🔥
+              <h2 className="text-2xl font-bold tracking-tight text-indigo-900">Hello there!</h2>
+              <p className="text-indigo-600/80 max-w-sm mx-auto">
+                I'm English Buddy, your personal English tutor. Ready to practice some English today? 🌟
               </p>
             </div>
           )}
@@ -168,8 +189,8 @@ export default function Chat() {
                 <div
                   className={`max-w-[90%] rounded-2xl px-4 py-3 shadow-sm ${
                     message.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-tr-none'
-                      : 'bg-card border border-border rounded-tl-none'
+                      ? 'bg-indigo-600 text-white rounded-tr-none'
+                      : 'bg-primary border border-indigo-100 rounded-tl-none text-slate-800'
                   }`}
                 >
                   <div className="text-sm leading-relaxed">
@@ -179,7 +200,7 @@ export default function Chat() {
                           <div key={`${message.id}-${i}`} className="whitespace-pre-wrap relative inline">
                             {part.text}
                             {isLastMessage && isAI && isLoading && (
-                              <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />
+                              <span className="inline-block w-1.5 h-4 ml-1 bg-indigo-400 animate-pulse align-middle" />
                             )}
                           </div>
                         );
@@ -208,26 +229,26 @@ export default function Chat() {
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handleFormSubmit} className="relative">
             <input
-              className="w-full glass pl-4 pr-12 py-4 rounded-2xl shadow-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+              className="w-full bg-background pl-4 pr-12 py-4 rounded-2xl shadow-lg border border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-indigo-300 text-slate-800"
               value={input}
-              placeholder="Nhập tin nhắn cho AI vip pro..."
+              placeholder="Type something in English..."
               onChange={(e) => setInput(e.target.value)}
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="absolute right-2 top-2 bottom-2 px-4 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+              className="absolute right-2 top-2 bottom-2 px-4 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
             >
               {isLoading ? (
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                'Gửi'
+                'Send'
               )}
             </button>
           </form>
-          <p className="text-[10px] text-center text-muted-foreground mt-2">
-            AI vip pro có thể đưa ra thông tin chưa chính xác. Thành quả của Dong Dev. 🔥
+          <p className="text-[10px] text-center text-indigo-400 mt-2">
+            English Buddy may provide inaccurate information. Created by Dong Dev. 🌟
           </p>
         </div>
       </footer>
