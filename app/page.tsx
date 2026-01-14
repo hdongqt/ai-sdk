@@ -8,9 +8,10 @@ import { useState, useEffect, useRef } from 'react';
 export default function Chat() {
   const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage, status } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const isLoading = status === 'submitted' || status === 'streaming';
 
   useEffect(() => {
     setMounted(true);
@@ -37,15 +38,10 @@ export default function Chat() {
 
     const currentInput = input;
     setInput('');
-    setIsLoading(true);
 
     try {
       await sendMessage({ text: currentInput });
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (error) {}
   };
 
   return (
@@ -83,56 +79,78 @@ export default function Chat() {
                   }`}
                 >
                   <div className="text-sm leading-relaxed">
-                    {message?.parts?.length > 0 &&
-                      message.parts.map((part: any, i) => {
-                        if (
-                          part.type === 'text' &&
-                          message.parts.findIndex((p: any) =>
-                            p.type.startsWith('tool')
-                          ) === -1
-                        ) {
-                          return (
-                            <div
-                              key={`${message.id}-${i}`}
-                              className="relative inline whitespace-pre-wrap"
-                            >
-                              {part.text}
-                              {isLastMessage && isAI && isLoading && (
-                                <span className="bg-primary ml-1 inline-block h-4 w-1.5 animate-pulse align-middle" />
-                              )}
-                            </div>
-                          );
-                        }
-                        if (part.type.startsWith('tool')) {
-                          if (part.type === 'tool-weather') {
+                    {message?.parts?.length > 0
+                      ? message.parts.map((part: any, i) => {
+                          if (
+                            part.type === 'text' &&
+                            message.parts.findIndex((p: any) => {
+                              return (
+                                p.type.startsWith('tool') &&
+                                p.type !== 'tool-search'
+                              );
+                            }) === -1
+                          ) {
                             return (
-                              <WeatherCard
+                              <div
                                 key={`${message.id}-${i}`}
-                                data={(part.output as any)?.data}
-                              />
+                                className="relative inline whitespace-pre-wrap"
+                              >
+                                {part.text}
+                                {isLastMessage &&
+                                  isAI &&
+                                  status === 'streaming' && (
+                                    <span className="bg-primary ml-1 inline-block h-4 w-1.5 animate-pulse align-middle" />
+                                  )}
+                              </div>
                             );
                           }
-                          if (part.type === 'tool-goldPrice') {
-                            return (
-                              <GoldPriceTable
-                                key={`${message.id}-${i}`}
-                                data={(part.output as any)?.data}
-                              />
-                            );
+                          if (part.type.startsWith('tool')) {
+                            if (part.type === 'tool-weather') {
+                              return (
+                                <WeatherCard
+                                  key={`${message.id}-${i}`}
+                                  data={(part.output as any)?.data}
+                                />
+                              );
+                            }
+                            if (part.type === 'tool-goldPrice') {
+                              return (
+                                <GoldPriceTable
+                                  key={`${message.id}-${i}`}
+                                  data={(part.output as any)?.data}
+                                />
+                              );
+                            }
                           }
-                        }
-                      })}
+                        })
+                      : null}
                   </div>
                 </div>
               </div>
             );
           })}
+
+          {(status === 'submitted' ||
+            (status === 'streaming' &&
+              messages[messages.length - 1]?.role === 'assistant' &&
+              messages[messages.length - 1]?.parts?.length === 0)) && (
+            <div className="flex justify-start">
+              <div className="bg-card border-border max-w-[90%] rounded-2xl rounded-tl-none border px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-1.5 px-1 py-2">
+                  <div className="bg-primary/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:-0.3s]" />
+                  <div className="bg-primary/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:-0.15s]" />
+                  <div className="bg-primary/40 h-1.5 w-1.5 animate-bounce rounded-full" />
+                </div>
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} className="h-4" />
         </div>
       </main>
 
       {/* Input Form */}
-      <footer className="from-background via-background sticky bottom-0 bg-gradient-to-t to-transparent p-4">
+      <footer className="from-background via-background sticky bottom-0 bg-linear-to-t to-transparent p-4">
         <div className="mx-auto max-w-2xl">
           <form onSubmit={handleFormSubmit} className="relative">
             <input
