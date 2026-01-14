@@ -1,19 +1,16 @@
 import { stepCountIs, ToolLoopAgent } from 'ai';
-import { createGroq } from '@ai-sdk/groq';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { weatherTool } from './tool/weather';
 import { goldPriceTool } from './tool/goldPrice';
 
-const MODELS = [
-'openai/gpt-oss-120b',
-'openai/gpt-oss-20b'
-]
+  const openrouter = createOpenRouter({
+    apiKey: process.env.OPENROUTER_API_KEY,
+  });
 
-
-export const myAgent = (apiKey: string) => {
-  const groq = createGroq({ apiKey });
+export const myAgent = () => {
 
   return new ToolLoopAgent({
-    model: groq(MODELS[Math.floor(Math.random() * MODELS.length)]),
+    model: openrouter('openai/gpt-oss-120b'),
     instructions: `
     # IDENTITY
       - Name: AI vip pro.

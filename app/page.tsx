@@ -1,89 +1,9 @@
 'use client';
 
+import GoldPriceTable from '@/app/components/gold-price-table';
+import WeatherCard from '@/app/components/weather-card';
 import { useChat } from '@ai-sdk/react';
 import { useState, useEffect, useRef } from 'react';
-
-
-const WeatherCard = ({ data }: { data: any }) => {
-  const weatherInfo = data?.data || data;
-  const isError = data?.status === 'error' || !weatherInfo;
-
-  if (isError) {
-    return (
-        <p className="text-sm font-medium">{data?.message || 'Không thể lấy thông tin thời tiết.'}</p>
-    );
-  }
-
-  const { name, temp, description } = weatherInfo;
-
-  return (
-    <div className="bg-linear-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-5 my-3 shadow-lg shadow-blue-500/20 relative overflow-hidden">
-      <div className="relative z-10">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-bold opacity-90">{name || 'Vị trí không xác định'}</h3>
-            <p className="text-sm opacity-80 capitalize">{description || 'Bầu trời quang đãng'}</p>
-          </div>
-          <span className="text-4xl">🌤️</span>
-        </div>
-        <div className="mt-4 flex items-baseline gap-1">
-          <span className="text-5xl font-bold tracking-tighter">{Math.round(temp) || 0}</span>
-          <span className="text-2xl font-medium">°C</span>
-        </div>
-      </div>
-      <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-    </div>
-  );
-};
-
-const GoldPriceTable = ({ data }: { data: any }) => {
-  const list = data?.data || data;
-  const isError = data?.status === 'error' || !Array.isArray(list);
-
-  if (isError) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-xl p-4 my-2 flex items-center gap-3 text-red-700">
-        <span className="text-2xl">⚠️</span>
-        <p className="text-sm font-medium">{data?.message || 'Không thể lấy thông tin giá vàng.'}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden my-3 shadow-sm">
-      <div className="bg-amber-500/10 px-4 py-2 border-b border-border flex items-center gap-2">
-        <span className="text-amber-600">💰</span>
-        <h3 className="text-sm font-bold text-amber-800">Bảng Giá Vàng Bảo Tín Minh Châu</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="text-xs text-muted-foreground uppercase bg-muted/50">
-            <tr>
-              <th className="px-4 py-2 font-medium">Loại vàng</th>
-              <th className="px-4 py-2 font-medium text-right">Mua vào</th>
-              <th className="px-4 py-2 font-medium text-right">Bán ra</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {list.map((item: any, idx: number) => (
-              <tr key={idx} className="hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-medium text-xs max-w-[150px] truncate">{item.name}</td>
-                <td className="px-4 py-3 text-right text-green-600 font-semibold">{item.buy}</td>
-                <td className="px-4 py-3 text-right text-red-600 font-semibold">{item.sell}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="px-4 py-2 bg-muted/20 border-t border-border">
-        <p className="text-[10px] text-muted-foreground italic text-center">
-          * Giá vàng biến động liên tục, chỉ mang tính chất tham khảo.
-        </p>
-      </div>
-    </div>
-  );
-};
-
 
 export default function Chat() {
   const [mounted, setMounted] = useState(false);
@@ -98,7 +18,10 @@ export default function Chat() {
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      messagesEndRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+      });
     }
   };
 
@@ -126,31 +49,18 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background" >
-      <header className="sticky top-0 z-10 border-b border-border px-4 py-4 bg-background/80 backdrop-blur-md">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg shadow-primary/20">
-            AI
-          </div>
-          <div>
-            <h1 className="font-bold text-lg leading-tight">AI vip pro</h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <span className={'w-2 h-2 rounded-full bg-green-500'}></span>
-              Đang sẵn sàng hỗ trợ Boss
-            </p>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-background flex min-h-screen flex-col">
       <main className="flex-1 overflow-y-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="mx-auto max-w-2xl space-y-6">
           {messages.length === 0 && (
-            <div className="text-center py-20 space-y-4">
-              <div className="w-16 h-16 bg-muted rounded-2xl mx-auto flex items-center justify-center text-3xl">
+            <div className="space-y-4 py-20 text-center">
+              <div className="bg-muted mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-3xl">
                 👋
               </div>
-              <h2 className="text-2xl font-bold tracking-tight">Xin chào Boss!</h2>
-              <p className="text-muted-foreground max-w-sm mx-auto">
+              <h2 className="text-2xl font-bold tracking-tight">
+                Xin chào Boss!
+              </h2>
+              <p className="text-muted-foreground mx-auto max-w-sm">
                 Em là AI vip pro. Boss muốn em hỗ trợ gì hôm nay không ạ? 🔥
               </p>
             </div>
@@ -169,31 +79,49 @@ export default function Chat() {
                   className={`max-w-[90%] rounded-2xl px-4 py-3 shadow-sm ${
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-tr-none'
-                      : 'bg-card border border-border rounded-tl-none'
+                      : 'bg-card border-border rounded-tl-none border'
                   }`}
                 >
                   <div className="text-sm leading-relaxed">
-                    {message?.parts?.length > 0 && message.parts.map((part: any, i) => {
-                      if (part.type === 'text' && message.parts.findIndex((p: any) => p.type.startsWith('tool')) === -1) {
-                        return (
-                          <div key={`${message.id}-${i}`} className="whitespace-pre-wrap relative inline">
-                            {part.text}
-                            {isLastMessage && isAI && isLoading && (
-                              <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />
-                            )}
-                          </div>
-                        );
-                      }
-                      if (part.type.startsWith('tool')) {
-                         if (part.type === 'tool-weather') {
-                            return <WeatherCard key={`${message.id}-${i}`} data={(part.output as any)?.data} />;
-                         }
-                         if (part.type === 'tool-goldPrice') {
-                            return <GoldPriceTable key={`${message.id}-${i}`} data={(part.output as any)?.data} />;
-                         }
-                      }
-
-                    })}
+                    {message?.parts?.length > 0 &&
+                      message.parts.map((part: any, i) => {
+                        if (
+                          part.type === 'text' &&
+                          message.parts.findIndex((p: any) =>
+                            p.type.startsWith('tool')
+                          ) === -1
+                        ) {
+                          return (
+                            <div
+                              key={`${message.id}-${i}`}
+                              className="relative inline whitespace-pre-wrap"
+                            >
+                              {part.text}
+                              {isLastMessage && isAI && isLoading && (
+                                <span className="bg-primary ml-1 inline-block h-4 w-1.5 animate-pulse align-middle" />
+                              )}
+                            </div>
+                          );
+                        }
+                        if (part.type.startsWith('tool')) {
+                          if (part.type === 'tool-weather') {
+                            return (
+                              <WeatherCard
+                                key={`${message.id}-${i}`}
+                                data={(part.output as any)?.data}
+                              />
+                            );
+                          }
+                          if (part.type === 'tool-goldPrice') {
+                            return (
+                              <GoldPriceTable
+                                key={`${message.id}-${i}`}
+                                data={(part.output as any)?.data}
+                              />
+                            );
+                          }
+                        }
+                      })}
                   </div>
                 </div>
               </div>
@@ -204,11 +132,11 @@ export default function Chat() {
       </main>
 
       {/* Input Form */}
-      <footer className="sticky bottom-0 p-4 bg-gradient-to-t from-background via-background to-transparent">
-        <div className="max-w-2xl mx-auto">
+      <footer className="from-background via-background sticky bottom-0 bg-gradient-to-t to-transparent p-4">
+        <div className="mx-auto max-w-2xl">
           <form onSubmit={handleFormSubmit} className="relative">
             <input
-              className="w-full glass pl-4 pr-12 py-4 rounded-2xl shadow-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+              className="glass border-border focus:ring-primary/50 placeholder:text-muted-foreground w-full rounded-2xl border py-4 pr-12 pl-4 shadow-lg transition-all focus:ring-2 focus:outline-none"
               value={input}
               placeholder="Nhập tin nhắn cho AI vip pro..."
               onChange={(e) => setInput(e.target.value)}
@@ -217,17 +145,18 @@ export default function Chat() {
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="absolute right-2 top-2 bottom-2 px-4 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+              className="bg-primary text-primary-foreground absolute top-2 right-2 bottom-2 flex items-center justify-center rounded-xl px-4 font-medium transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? (
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               ) : (
                 'Gửi'
               )}
             </button>
           </form>
-          <p className="text-[10px] text-center text-muted-foreground mt-2">
-            AI vip pro có thể đưa ra thông tin chưa chính xác. Thành quả của Dong Dev. 🔥
+          <p className="text-muted-foreground mt-2 text-center text-[10px]">
+            AI vip pro có thể đưa ra thông tin chưa chính xác. Thành quả của
+            Dong Dev. 🔥
           </p>
         </div>
       </footer>
