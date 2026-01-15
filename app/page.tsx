@@ -8,7 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 export default function Chat() {
   const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState('');
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, stop } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -72,7 +72,7 @@ export default function Chat() {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[90%] rounded-2xl px-4 py-3 shadow-sm ${
+                  className={`rounded-2xl px-4 py-3 shadow-sm ${
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-tr-none'
                       : 'bg-card border-border rounded-tl-none border'
@@ -93,9 +93,26 @@ export default function Chat() {
                             return (
                               <div
                                 key={`${message.id}-${i}`}
-                                className="relative inline whitespace-pre-wrap"
+                                className="relative inline wrap-break-word whitespace-pre-wrap"
                               >
-                                {part.text}
+                                {part.text
+                                  .split(/(https?:\/\/[^\s]+)/g)
+                                  .map((segment: string, j: number) => {
+                                    if (segment.match(/^https?:\/\/[^\s]+$/)) {
+                                      return (
+                                        <a
+                                          key={j}
+                                          href={segment}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-primary underline transition-opacity hover:opacity-80"
+                                        >
+                                          {segment}
+                                        </a>
+                                      );
+                                    }
+                                    return segment;
+                                  })}
                                 {isLastMessage &&
                                   isAI &&
                                   status === 'streaming' && (
@@ -136,7 +153,7 @@ export default function Chat() {
               messages[messages.length - 1]?.parts?.length === 0)) && (
             <div className="flex justify-start">
               <div className="bg-card border-border max-w-[90%] rounded-2xl rounded-tl-none border px-4 py-3 shadow-sm">
-                <div className="flex items-center gap-1.5 px-1 py-2">
+                <div className="flex items-center gap-1.5 px-1 py-1">
                   <div className="bg-primary/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:-0.3s]" />
                   <div className="bg-primary/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:-0.15s]" />
                   <div className="bg-primary/40 h-1.5 w-1.5 animate-bounce rounded-full" />
@@ -161,14 +178,40 @@ export default function Chat() {
               disabled={isLoading}
             />
             <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className="bg-primary text-primary-foreground absolute top-2 right-2 bottom-2 flex items-center justify-center rounded-xl px-4 font-medium transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              type={isLoading ? 'button' : 'submit'}
+              onClick={isLoading ? () => stop() : undefined}
+              disabled={!isLoading && !input.trim()}
+              className={`absolute top-2 right-2 bottom-2 flex aspect-square items-center justify-center rounded-xl transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                isLoading
+                  ? 'text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive bg-gray-800 shadow-md hover:scale-105 hover:bg-gray-700 active:scale-95'
+                  : 'bg-primary text-primary-foreground focus:ring-primary shadow-sm hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50'
+              }`}
             >
               {isLoading ? (
-                <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                </svg>
               ) : (
-                'Gửi'
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
               )}
             </button>
           </form>
