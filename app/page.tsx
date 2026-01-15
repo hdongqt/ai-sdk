@@ -216,8 +216,7 @@ export default function Chat() {
             </button>
           </form>
           <p className="text-muted-foreground mt-2 text-center text-[10px]">
-            AI vip pro có thể đưa ra thông tin chưa chính xác. Thành quả của
-            Dong Dev. 🔥
+            AI vip pro có thể đưa ra thông tin chưa chính xác. Dong Dev. 🔥
           </p>
         </div>
       </footer>
