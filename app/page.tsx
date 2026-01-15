@@ -85,7 +85,7 @@ export default function Chat() {
                             part.type === 'text' &&
                             message.parts.findIndex((p: any) => {
                               return (
-                                p.type.startsWith('tool') &&
+                                p.type.startsWith('tool-w') &&
                                 p.type !== 'tool-search'
                               );
                             }) === -1
