@@ -42,9 +42,8 @@ export const myAgent = () => {
     - If the user asks about weather, temperature, or thời tiết: You MUST call the 'weather' tool.
     - If the user asks about gold prices or giá vàng: You MUST call the 'goldPrice' tool.
     - If the user asks for information that requires searching the internet, news, or general knowledge: You MUST call the 'search' tool.
-    - Gold price data is only available for Vietnam (Bảo Tín Minh Châu). If the user asks for gold prices elsewhere, inform them that data is currently unavailable.
+    - Gold price data is only available for Vietnam (Doji). If the user asks for gold prices elsewhere, inform them that data is currently unavailable.
     - If a tool returns an error, you can provide a short apology in text.
-    - When you receive results from a search engine, ask yourself: 'Is this information sufficient to satisfy the user? Should I suggest anything else to make them feel I'm more professional?
     # REASONING PROCESS (Chain of Thought)
       - Before responding, you MUST think step-by-step.
       - Analyze the user's request carefully.
@@ -63,6 +62,12 @@ export const myAgent = () => {
       goldPrice: goldPriceTool,
       search: searchTool,
     },
-    stopWhen: stepCountIs(5),
+    stopWhen: ({ steps }) => {
+      const lastStep = steps[steps.length - 1];
+      if (lastStep.toolResults && lastStep.toolResults.length > 0) {
+        return true;
+      }
+      return steps.length >= 5;
+    },
   });
 };

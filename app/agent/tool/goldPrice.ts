@@ -1,32 +1,62 @@
-import { tool } from "ai";
-import z from "zod";
+import { tool } from 'ai';
+import z from 'zod';
 
 export const goldPriceTool = tool({
-    description: 'Get the gold price in Vietnam, Giá vàng mới nhất',
-    inputSchema: z.object({}),
-    execute: async () => {
-      try {
-        const response = await fetch('http://api.btmc.vn/api/BTMCAPI/getpricebtmc?key=3kd8ub1llcg9t45hnoh8hmn7t5kc2v');
-        const jsonObj = await response.json();
-        const dataList = jsonObj.DataList?.Data;
-
-        if (!dataList || !Array.isArray(dataList)) {
-            return { status: 'error', message: 'SYSTEM_ERROR: Invalid gold data' };
+  description: 'Get the gold price in Vietnam, Giá vàng mới nhất',
+  inputSchema: z.object({}),
+  execute: async () => {
+    try {
+      const response = await fetch(
+        'https://vapi.vnappmob.com/api/v2/gold/doji',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.VNAPPMOB_API_KEY}`,
+          },
         }
+      );
+      const jsonObj = await response.json();
+      const results = jsonObj.results;
 
-        const data = dataList.slice(0, 5).map((item: any) => {
-          const row = item["@row"];
-          return {
-            name: item[`@n_${row}`],
-            buy: item[`@pb_${row}`],
-            sell: item[`@ps_${row}`],
-            time: item[`@d_${row}`],
-          };
-        });
-
-        return { status: 'success', data };
-      } catch (error: any) {
-        return { status: 'error', message: 'SYSTEM_ERROR: Gold service unavailable' };
+      if (!results || !Array.isArray(results) || results.length === 0) {
+        return { status: 'error', message: 'SYSTEM_ERROR: Invalid gold data' };
       }
-    },
-  });
+
+      const item = results[0];
+      const formatPrice = (price: string) => {
+        return new Intl.NumberFormat('vi-VN').format(parseFloat(price));
+      };
+
+      const data = [
+        {
+          name: 'Hà Nội',
+          buy: formatPrice(item.buy_hn),
+          sell: formatPrice(item.sell_hn),
+        },
+        {
+          name: 'TP. Hồ Chí Minh',
+          buy: formatPrice(item.buy_hcm),
+          sell: formatPrice(item.sell_hcm),
+        },
+        {
+          name: 'Đà Nẵng',
+          buy: formatPrice(item.buy_dn),
+          sell: formatPrice(item.sell_dn),
+        },
+        {
+          name: 'Cần Thơ',
+          buy: formatPrice(item.buy_ct),
+          sell: formatPrice(item.sell_ct),
+        },
+      ];
+
+      return { status: 'success', data, datetime: item.datetime };
+    } catch (error: any) {
+      return {
+        status: 'error',
+        message: 'SYSTEM_ERROR: Gold service unavailable',
+      };
+    }
+  },
+});
