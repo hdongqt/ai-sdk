@@ -63,11 +63,7 @@ export const myAgent = () => {
       search: searchTool,
     },
     stopWhen: ({ steps }) => {
-      const lastStep = steps[steps.length - 1];
-      if (lastStep.toolResults && lastStep.toolResults.length > 0) {
-        return true;
-      }
-      return steps.length >= 5;
+      return steps.length >= 15;
     },
   });
 };
