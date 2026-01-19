@@ -1,7 +1,17 @@
+'use client';
+
 import { AuthForm } from '@/app/components/auth-form';
+import { useAuthStore } from '@/store/useAuth';
+import { useRouter } from 'next/navigation';
 import { Zap } from 'lucide-react';
 
 export default function LoginPage() {
+  const { user } = useAuthStore();
+  const router = useRouter();
+  if (user) {
+    router.push('/chat');
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] p-4">
       <div className="absolute inset-0 overflow-hidden">
