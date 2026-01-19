@@ -9,7 +9,7 @@ export default function LoginPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   if (user) {
-    router.push('/chat');
+    router.push('/');
   }
 
   return (

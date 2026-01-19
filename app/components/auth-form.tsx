@@ -85,6 +85,7 @@ export function AuthForm() {
               autoComplete="email"
               required
               disabled={isLoading}
+              value={'test@gmail.com'}
               className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="name@example.com"
             />
@@ -103,6 +104,7 @@ export function AuthForm() {
               type="password"
               autoComplete="current-password"
               required
+              value={'12345678'}
               disabled={isLoading}
               className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder=""
