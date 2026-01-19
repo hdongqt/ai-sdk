@@ -2,11 +2,37 @@
 
 import { useState } from 'react';
 import { login, signInWithOAuth, signup } from '@/app/auth/actions';
-import { Chrome, Loader2, LogIn } from 'lucide-react';
+import { Loader2, LogIn } from 'lucide-react';
 
 export function AuthForm() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(e.currentTarget);
+    try {
+      if (mode === 'login') {
+        await login(formData);
+      } else {
+        await signup(formData);
+      }
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOAuth = async (provider: 'google') => {
+    setIsLoading(true);
+    try {
+      await signInWithOAuth(provider);
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-md space-y-8 rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl">
@@ -24,8 +50,9 @@ export function AuthForm() {
       <div className="space-y-6">
         <div className="flex justify-center">
           <button
-            onClick={() => signInWithOAuth('google')}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/10 active:scale-95"
+            onClick={() => handleOAuth('google')}
+            disabled={isLoading}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/10 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="text-lg">Google</span>
             <LogIn />
@@ -43,7 +70,7 @@ export function AuthForm() {
           </div>
         </div>
 
-        <form action={mode === 'login' ? login : signup} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="email"
@@ -57,7 +84,8 @@ export function AuthForm() {
               type="email"
               autoComplete="email"
               required
-              className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              disabled={isLoading}
+              className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="name@example.com"
             />
           </div>
@@ -75,7 +103,8 @@ export function AuthForm() {
               type="password"
               autoComplete="current-password"
               required
-              className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              disabled={isLoading}
+              className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder=""
             />
           </div>
@@ -88,7 +117,6 @@ export function AuthForm() {
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Processing...
               </span>
             ) : mode === 'login' ? (
               'Sign In'
